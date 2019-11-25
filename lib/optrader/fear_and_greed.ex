@@ -74,24 +74,18 @@ defmodule Optrader.FearAndGreed do
     data
     |> Enum.with_index()
     |> Enum.map(fn {e, idx} ->
-      date = unix_timestamp_to_date(e[:timestamp])
+      date = Optrader.Application.unix_timestamp_to_date(e[:timestamp])
 
       e = Map.put(e, :date, date)
 
       index = Optrader.FearAndGreed.changeset(f_g_index, e)
-      |> Optrader.Repo.insert
+
+      Optrader.Repo.insert(index)
     end)
   end
 
   def sorted(query) do
     from p in query,
     order_by: [desc: p.date]
-  end
-
-  def unix_timestamp_to_date(timestamp) do
-    Integer.parse(timestamp)
-    |> case do {integer, _} -> integer end
-    |> DateTime.from_unix
-    |> case do { _, date} -> date end
   end
 end

@@ -27,3 +27,23 @@ config :logger, :console,
 import_config "#{Mix.env}.exs"
 
 config :phoenix, :json_library, Poison
+config :hound,
+  driver: "chrome_driver",
+  browser: "chrome",
+  host: "http://localhost",
+  port: 9515,
+  path_prefix: "wd/hub/",
+  chromeOptions: %{
+    "prefs" => %{
+      "loggingPrefs" => %{
+        "browser" => 'ALL',
+        "driver" => 'ALL',
+        "performance" => 'ALL'
+      },
+      "download" => %{
+        "default_directory" => "/home/janm",
+        "prompt_for_download" => false,
+        "directory_upgrade" => true,
+      }
+    }
+  }

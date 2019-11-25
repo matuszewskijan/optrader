@@ -18,6 +18,7 @@ defmodule OptraderWeb.Router do
     pipe_through :api
 
     resources "/fear_and_greed", FearAndGreedController, only: [:index, :show]
+    resources "/trends", TrendsController, only: [:index, :show]
   end
 
   scope "/", OptraderWeb do
