@@ -1,11 +1,9 @@
-// assets/js/components/Main.tsx
-
-import * as React from 'react'
+import * as React from 'react';
 
 const Main: React.FC = ({ children }) => (
   <main role="main" className="container">
     {children}
   </main>
-)
+);
 
-export default Main
+export default Main;

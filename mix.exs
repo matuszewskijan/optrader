@@ -20,7 +20,7 @@ defmodule Optrader.Mixfile do
   def application do
     [
       mod: {Optrader.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :timex]
     ]
   end
 
@@ -45,7 +45,8 @@ defmodule Optrader.Mixfile do
       {:plug, "~> 1.7"},
       {:httpoison, "~> 1.5"},
       {:poison, "~> 3.1"},
-      {:hound, "~> 1.0"}
+      {:hound, "~> 1.0"},
+      {:timex, "~> 3.5"}
     ]
   end
 

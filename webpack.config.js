@@ -13,7 +13,7 @@ module.exports = (env, options) => ({
     ]
   },
   entry: {
-      app: './assets/js/app.tsx'
+      app: ['./assets/js/app.tsx', './assets/css/app.css']
   },
   output: {
     filename: 'app.js',
@@ -29,13 +29,14 @@ module.exports = (env, options) => ({
         }
       },
       {
-        test: /\.css$/,
-        use: [MiniCssExtractPlugin.loader, 'css-loader']
+        test: /\.s?css$/,
+        //exclude: /node_modules/,
+        use: ['style-loader', 'css-loader', 'sass-loader'],
       }
     ]
   },
   plugins: [
-    new MiniCssExtractPlugin({ filename: '../css/app.css' }),
+    new MiniCssExtractPlugin({ filename: './assets/css/app.css' }),
     new CopyWebpackPlugin([{ from: 'assets/static/', to: '../' }])
   ],
   resolve: {

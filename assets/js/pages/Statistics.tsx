@@ -5,85 +5,56 @@ import { Link } from 'react-router-dom';
 
 import Main from '../components/Main';
 
-// The interface for our API response
-interface ApiResponse {
-  data: FearAndGreed[];
-}
+import IntervalButton from './statistics/IntervalButton'
+import Chart from './statistics/Chart';
+import { DateRangePicker, DayPickerRangeController } from 'react-dates';
 
-// The interface for our FearAndGreed model.
-interface FearAndGreed {
-  id: integer,
-  value_classification: string;
-  value: integer;
-  date: datetime;
-}
-
-interface FetchFearAndGreedIndex {
-  indexes: FearAndGreed[];
-  loading: boolean;
-}
-
-export default class Statistics extends React.Component<
-  {},
-  FetchFearAndGreedIndex
-> {
+export default class Statistics extends React.Component<{}>
+{
   constructor(props: {}) {
     super(props);
-    this.state = { fear_and_greed: [], loading: true };
+    this.state = { clickedIndex: 24 };
 
-    // Get the data from our API.
-    fetch('/api/fear_and_greed')
-      .then(response => response.json() as Promise<ApiResponse>)
-      .then(data => {
-        this.setState({ indexes: data.data, loading: false });
-      });
+    this.apiCalls = [
+      { 'path': '/api/fear_and_greed', 'label':'Fear and Greed', 'borderColor':'rgba(226,57,6,0.6)' },
+      { 'path': '/api/trends', 'label':'Trends', 'borderColor':'rgb(6, 129, 222,0.6)' }
+    ];
+
+    this.intervals = [24, 1];
   }
 
-  private static renderFearAndGreedIndex(indexes: FearAndGreed[]) {
-    return (
-      <table>
-        <thead>
-          <tr>
-            <th>Value Classification</th>
-            <th>Value</th>
-            <th>Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {indexes.map(index => (
-            <tr key={index.id}>
-              <td>{index.value_classification}</td>
-              <td>{index.value}</td>
-              <td>{index.date}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    );
+  intervalHandler(index){
+    this.setState({clickedIndex: index});
   }
 
   public render(): JSX.Element {
-    const content = this.state.loading ? (
-      <p>
-        <em>Loading...</em>
-      </p>
-    ) : (
-      Statistics.renderFearAndGreedIndex(this.state.indexes)
-    );
-
     return (
       <Main>
-        <h1>Fetch Data</h1>
-        <p>
-          This component demonstrates fetching data from the Phoenix API
-          endpoint.
-        </p>
-        {content}
-        <br />
-        <br />
-        <p>
-          <Link to="/">Back to home</Link>
-        </p>
+        <div>
+          Select interval:
+          {
+            this.intervals.map(
+              (i) => <IntervalButton key={i}
+                                     clicked={i === this.state.clickedIndex}
+                                     onClick={() => this.intervalHandler(i)}
+                                     index={i}
+                     />
+            )
+          }
+        </div>
+        <div>
+          <DateRangePicker
+            startDate={this.state.startDate} // momentPropTypes.momentObj or null,
+            startDateId="your_unique_start_date_id" // PropTypes.string.isRequired,
+            endDate={this.state.endDate} // momentPropTypes.momentObj or null,
+            endDateId="your_unique_end_date_id" // PropTypes.string.isRequired,
+            onDatesChange={({ startDate, endDate }) => this.setState({ startDate, endDate })} // PropTypes.func.isRequired,
+            focusedInput={this.state.focusedInput} // PropTypes.oneOf([START_DATE, END_DATE]) or null,
+            onFocusChange={focusedInput => this.setState({ focusedInput })} // PropTypes.func.isRequired,
+          />
+        </div>
+        <Chart apiCalls={this.apiCalls} interval={this.state.clickedIndex}
+               startDate={this.state.startDate} endDate={this.state.endDate}/>
       </Main>
     );
   }

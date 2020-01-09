@@ -1,4 +1,5 @@
 defmodule OptraderWeb.FearAndGreedView do
+  import Timex
   use OptraderWeb, :view
 
   def render("index.json", %{records: records}) do
@@ -14,9 +15,10 @@ defmodule OptraderWeb.FearAndGreedView do
   def records_json(record) do
     %{
       id: record.id,
-      date: record.date,
+      datetime: record.date,
+      date: record.date |> Timex.format!("{YYYY}/{M}/{D}"),
       value: record.value,
-      value_classification: record.value_classification
+      label: record.value_classification
     }
   end
 end

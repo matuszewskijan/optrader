@@ -1,6 +1,4 @@
-// assets/js/components/Header.tsx
-
-import * as React from 'react'
+import * as React from 'react';
 
 const Header: React.FC = () => (
   <header>
@@ -8,15 +6,18 @@ const Header: React.FC = () => (
       <nav role="navigation">
         <ul>
           <li>
-            <a href="/fear_and_greed">Fear And Greed Index</a>
+            <a className="new_link" href="/">Home</a>
+          </li>
+          <li>
+            <a className="new_link" href="/statistics">Statistics</a>
           </li>
         </ul>
       </nav>
-      <a href="http://phoenixframework.org/" className="phx-logo">
+      <a href="/" className="phx-logo">
         <img src="/images/phoenix.png" alt="Phoenix Framework Logo" />
       </a>
     </section>
   </header>
-)
+);
 
-export default Header
+export default Header;
