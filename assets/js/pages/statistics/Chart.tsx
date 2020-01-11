@@ -9,6 +9,20 @@ export default class Chart extends React.Component<{}> {
   }
 
   componentDidMount() {
+    this.fetchApiData()
+  }
+
+
+  // shouldComponentUpdate(nextProps, nextState) {
+  //   console.log(this.props)
+  //   console.log(nextProps);
+  //   if (nextState.startDate != null && nextState.endDate == null) {
+  //     return false;
+  //   }
+  //   return true;
+  // }
+
+  fetchApiData() {
     var apiCalls = this.props.apiCalls
     var params = {
       interval: this.props.interval,
@@ -16,36 +30,26 @@ export default class Chart extends React.Component<{}> {
       endDate: this.props.endDate,
     }
 
-
-
     return Promise.all(
       apiCalls.map(
       dataObj => {
-        console.log(location.host)
-          var url = new URL('http://' + location.host + dataObj.path)
-          Object.keys(params).forEach(key => url.searchParams.append(key, params[key]))
-          return fetch(url)
-        // dataObj => fetch(dataObj.path, { params: params })
+        var url = new URL('http://' + location.host + dataObj.path)
+        Object.keys(params).forEach(key => url.searchParams.append(key, params[key]))
+        return fetch(url)
       })
     )
     .then(results => Promise.all(results.map(res => res.json())))
     .then(results => this.setState({
         data: {
-            'labels': results[0].data.map(data => data.date),
-            'datasets': results.map(function (result, index) {
-              return {
-                  label: apiCalls[index].label,
-                  data: result.data.map(data => data.value),
-                  labels: result.data.map(data => data.label),
-                  borderColor: apiCalls[index].borderColor
-              }
-            })
-            //     {
-            //         'label': 'Test',
-            //         'data': [1,2, 3], //results.reduce((prev, next) => prev.concat(next), []),
-            //         'backgroundColor': apiCalls.map(dataObj => dataObj.bgColor)
-            //     }
-            // ]
+          'labels': results[0].data.map(data => data.date),
+          'datasets': results.map(function (result, index) {
+            return {
+              label: apiCalls[index].label,
+              data: result.data.map(data => data.value),
+              labels: result.data.map(data => data.label),
+              borderColor: apiCalls[index].borderColor
+            }
+          })
         },
         loading: false
     }));

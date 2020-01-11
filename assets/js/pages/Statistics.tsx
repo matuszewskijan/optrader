@@ -13,7 +13,7 @@ export default class Statistics extends React.Component<{}>
 {
   constructor(props: {}) {
     super(props);
-    this.state = { clickedIndex: 24 };
+    this.state = { clickedIndex: 24, startDate: null, endDate: null, eDate: null, sDate: null };
 
     this.apiCalls = [
       { 'path': '/api/fear_and_greed', 'label':'Fear and Greed', 'borderColor':'rgba(226,57,6,0.6)' },
@@ -23,11 +23,20 @@ export default class Statistics extends React.Component<{}>
     this.intervals = [24, 1];
   }
 
-  intervalHandler(index){
+  intervalHandler(index) {
     this.setState({clickedIndex: index});
   }
 
+  dateHandler(startDate, endDate) {
+    this.setState({ startDate, endDate })
+
+    if (startDate && endDate) {
+      this.setState({ sDate: startDate.format('X'), eDate: endDate.format('X') })
+    }
+  }
+
   public render(): JSX.Element {
+    console.log(this.state.eDate + this.state.clickedIndex)
     return (
       <Main>
         <div>
@@ -48,13 +57,14 @@ export default class Statistics extends React.Component<{}>
             startDateId="your_unique_start_date_id" // PropTypes.string.isRequired,
             endDate={this.state.endDate} // momentPropTypes.momentObj or null,
             endDateId="your_unique_end_date_id" // PropTypes.string.isRequired,
-            onDatesChange={({ startDate, endDate }) => this.setState({ startDate, endDate })} // PropTypes.func.isRequired,
+            onDatesChange={({ startDate, endDate }) => this.dateHandler(startDate, endDate)} // PropTypes.func.isRequired,
             focusedInput={this.state.focusedInput} // PropTypes.oneOf([START_DATE, END_DATE]) or null,
             onFocusChange={focusedInput => this.setState({ focusedInput })} // PropTypes.func.isRequired,
           />
         </div>
-        <Chart apiCalls={this.apiCalls} interval={this.state.clickedIndex}
-               startDate={this.state.startDate} endDate={this.state.endDate}/>
+        <Chart key={this.state.eDate + this.state.clickedIndex}
+               apiCalls={this.apiCalls} interval={this.state.clickedIndex}
+               startDate={this.state.sDate} endDate={this.state.eDate}/>
       </Main>
     );
   }
