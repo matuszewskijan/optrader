@@ -9,7 +9,7 @@ defmodule Optrader.Trends do
     field :currency_short_name, :string
     field :interval_number, :integer
     field :interval_unit, :string
-    field :time, :naive_datetime
+    field :timestamp, :integer
     field :value, :integer
 
     timestamps()
@@ -18,31 +18,31 @@ defmodule Optrader.Trends do
   @doc false
   def changeset(trends, attrs) do
     trends
-    |> cast(attrs, [:currency_name, :currency_short_name, :value, :interval_number, :interval_unit, :time])
-    |> validate_required([:currency_name, :currency_short_name, :value, :interval_number, :interval_unit, :time])
-    |> validate_unique_date
+    |> cast(attrs, [:currency_name, :currency_short_name, :value, :interval_number, :interval_unit, :timestamp])
+    |> validate_required([:currency_name, :currency_short_name, :value, :interval_number, :interval_unit, :timestamp])
+    |> validate_unique_timestamp
   end
 
-  def validate_unique_date(changeset) do
-    date = get_field(changeset, :time)
-    if date do
-      date_query = from e in Optrader.Trends, where: e.time == ^date
+  def validate_unique_timestamp(changeset) do
+    timestamp = get_field(changeset, :timestamp)
+    if timestamp do
+      timestamp_query = from e in Optrader.FearAndGreed, where: e.timestamp == ^timestamp
 
       # For updates, don't flag event as a dup of itself
       id = get_field(changeset, :id)
-      date_query = if is_nil(id) do
-        date_query
+      timestamp_query = if is_nil(id) do
+        timestamp_query
       else
-        from e in date_query, where: e.id != ^id
+        from e in timestamp_query, where: e.id != ^id
       end
 
-      dups = date_query |> Optrader.Repo.all
+      dups = timestamp_query |> Optrader.Repo.all
       if Enum.any?(dups) do
         add_error(
           changeset,
-          :date,
+          :timestamp,
           "has already been taken",
-          [validation: :validate_unique_name]
+          [validation: :validate_unique_timestamp]
         )
       else
         changeset
@@ -87,15 +87,14 @@ defmodule Optrader.Trends do
 
   def save_new_trends(data, currency_info \\ default_currency) do
     new_trend = %Optrader.Trends{}
-
     interval_data = calculate_interval(Enum.at(data, 0)[:time], Enum.at(data, 1)[:time])
 
     data
     |> Enum.with_index()
     |> Enum.map(fn {data, idx} ->
-      date = Optrader.Application.unix_timestamp_to_date(data[:time])
+      timestamp = String.to_integer(data[:time])
 
-      record = %{time: date}
+      record = %{timestamp: timestamp}
       |> Map.merge(interval_data)
       |> Map.merge(currency_info)
       |> Map.merge(%{value: List.first(data[:value])})

@@ -29,11 +29,4 @@ defmodule Optrader.Application do
     :ok
   end
 
-  def unix_timestamp_to_date(timestamp) do
-    Integer.parse(timestamp)
-    |> case do {integer, _} -> integer end
-    |> DateTime.from_unix
-    |> case do { _, date} -> date end
-  end
-
 end

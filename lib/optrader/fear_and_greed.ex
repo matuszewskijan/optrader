@@ -4,7 +4,7 @@ defmodule Optrader.FearAndGreed do
   import Ecto.Query
 
   schema "f_g_index" do
-    field :date, :naive_datetime
+    field :timestamp, :integer
     field :value, :string
     field :value_classification, :string
 
@@ -14,32 +14,31 @@ defmodule Optrader.FearAndGreed do
   @doc false
   def changeset(fear_and_greed, attrs) do
     fear_and_greed
-    |> cast(attrs, [:value, :value_classification, :date])
-    |> validate_required([:value, :value_classification, :date])
-    |> validate_unique_date
+    |> cast(attrs, [:value, :value_classification, :timestamp])
+    |> validate_required([:value, :value_classification, :timestamp])
+    |> validate_unique_timestamp
   end
 
-  # TODO: Check if index from this date already exists
-  def validate_unique_date(changeset) do
-    date = get_field(changeset, :date)
-    if date do
-      date_query = from e in Optrader.FearAndGreed, where: e.date == ^date
+  def validate_unique_timestamp(changeset) do
+    timestamp = get_field(changeset, :timestamp)
+    if timestamp do
+      timestamp_query = from e in Optrader.FearAndGreed, where: e.timestamp == ^timestamp
 
       # For updates, don't flag event as a dup of itself
       id = get_field(changeset, :id)
-      date_query = if is_nil(id) do
-        date_query
+      timestamp_query = if is_nil(id) do
+        timestamp_query
       else
-        from e in date_query, where: e.id != ^id
+        from e in timestamp_query, where: e.id != ^id
       end
 
-      dups = date_query |> Optrader.Repo.all
+      dups = timestamp_query |> Optrader.Repo.all
       if Enum.any?(dups) do
         add_error(
           changeset,
-          :date,
+          :timestamp,
           "has already been taken",
-          [validation: :validate_unique_name]
+          [validation: :validate_unique_timestamp]
         )
       else
         changeset
@@ -73,19 +72,15 @@ defmodule Optrader.FearAndGreed do
 
     data
     |> Enum.with_index()
-    |> Enum.map(fn {e, idx} ->
-      date = Optrader.Application.unix_timestamp_to_date(e[:timestamp])
-
-      e = Map.put(e, :date, date)
-
-      index = Optrader.FearAndGreed.changeset(f_g_index, e)
-
-      Optrader.Repo.insert(index)
+    |> Enum.map(fn {index, id} ->
+      f_g_index
+      |> Optrader.FearAndGreed.changeset(Map.merge(index, %{ timestamp: String.to_integer(index[:timestamp]) }))
+      |> Optrader.Repo.insert
     end)
   end
 
   def sorted(query) do
     from p in query,
-    order_by: [desc: p.date]
+    order_by: [desc: p.timestamp]
   end
 end

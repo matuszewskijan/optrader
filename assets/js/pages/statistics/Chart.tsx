@@ -12,16 +12,6 @@ export default class Chart extends React.Component<{}> {
     this.fetchApiData()
   }
 
-
-  // shouldComponentUpdate(nextProps, nextState) {
-  //   console.log(this.props)
-  //   console.log(nextProps);
-  //   if (nextState.startDate != null && nextState.endDate == null) {
-  //     return false;
-  //   }
-  //   return true;
-  // }
-
   fetchApiData() {
     var apiCalls = this.props.apiCalls
     var params = {
