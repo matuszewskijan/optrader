@@ -15,10 +15,11 @@ defmodule OptraderWeb.FearAndGreedView do
   def records_json(record) do
     %{
       id: record.id,
-      datetime: record.date,
-      date: record.date |> Timex.format!("{YYYY}/{M}/{D}"),
       value: record.value,
-      label: record.value_classification
+      label: record.value_classification,
+      datetime: DateTime.from_unix!(record.timestamp, :second) |> Timex.format!("{ISOdate} {ISOtime}"),
+      date: DateTime.from_unix!(record.timestamp, :second) |> Timex.format!("{YYYY}/{M}/{D}"),
+      timestamp: record.timestamp
     }
   end
 end

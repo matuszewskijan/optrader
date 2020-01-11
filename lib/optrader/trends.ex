@@ -115,4 +115,9 @@ defmodule Optrader.Trends do
   defp default_currency do
     %{currency_name: "bitcoin", currency_short_name: "btc"}
   end
+
+  def sorted(query) do
+    from p in query,
+    order_by: [asc: p.timestamp]
+  end
 end

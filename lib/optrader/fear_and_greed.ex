@@ -81,6 +81,6 @@ defmodule Optrader.FearAndGreed do
 
   def sorted(query) do
     from p in query,
-    order_by: [desc: p.timestamp]
+    order_by: [asc: p.timestamp]
   end
 end

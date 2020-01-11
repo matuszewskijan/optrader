@@ -4,9 +4,9 @@ defmodule OptraderWeb.TrendsController do
   alias Optrader.Trends
 
   def index(conn, _params) do
-    Trends.import_data |> Trends.save_new_trends
+    # Trends.import_data |> Trends.save_new_trends
 
-    records = Trends |> Optrader.Repo.all
+    records = Trends |> Trends.sorted |> Optrader.Repo.all
 
     render(conn, "index.json", records: records)
   end
