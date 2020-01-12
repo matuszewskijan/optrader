@@ -3,12 +3,17 @@ defmodule OptraderWeb.FearAndGreedController do
   require Ecto.Query
   alias Optrader.FearAndGreed
 
-  def index(conn, _params) do
-    { _, response } = FearAndGreed.import
+  def index(conn, params) do
+    # { _, response } = FearAndGreed.import
 
-    response[:data] |> FearAndGreed.save_new_indexes
+    # response[:data] |> FearAndGreed.save_new_indexes
 
-    records = FearAndGreed |> FearAndGreed.sorted |> Optrader.Repo.all
+    records = FearAndGreed
+    |> FearAndGreed.in_date_range(params["startDate"], params["endDate"])
+    |> FearAndGreed.with_interval(params["interval"])
+    |> FearAndGreed.sort_by_timestamp
+    |> Optrader.Repo.all
+    |> FearAndGreed.generate_consistency_data
 
     render(conn, "index.json", records: records)
   end

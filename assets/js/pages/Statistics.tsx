@@ -60,6 +60,7 @@ export default class Statistics extends React.Component<{}>
             onDatesChange={({ startDate, endDate }) => this.dateHandler(startDate, endDate)} // PropTypes.func.isRequired,
             focusedInput={this.state.focusedInput} // PropTypes.oneOf([START_DATE, END_DATE]) or null,
             onFocusChange={focusedInput => this.setState({ focusedInput })} // PropTypes.func.isRequired,
+            isOutsideRange={() => false}
           />
         </div>
         <Chart key={this.state.eDate + this.state.clickedIndex}

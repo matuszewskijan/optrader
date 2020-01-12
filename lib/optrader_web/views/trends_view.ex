@@ -11,6 +11,7 @@ defmodule OptraderWeb.TrendsView do
     %{data: records_json(record)}
   end
 
+  # TODO: Round returned values
   def records_json(record) do
     %{
       id: record.id,
