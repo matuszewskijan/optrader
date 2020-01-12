@@ -31,12 +31,13 @@ export default class Statistics extends React.Component<{}>
     this.setState({ startDate, endDate })
 
     if (startDate && endDate) {
-      this.setState({ sDate: startDate.format('X'), eDate: endDate.format('X') })
+      this.setState(
+        { sDate: startDate.startOf('day').format('X'), eDate: endDate.endOf('day').format('X') }
+      );
     }
   }
 
   public render(): JSX.Element {
-    console.log(this.state.eDate + this.state.clickedIndex)
     return (
       <Main>
         <div>

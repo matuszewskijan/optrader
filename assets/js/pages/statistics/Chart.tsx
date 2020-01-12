@@ -20,7 +20,7 @@ export default class Chart extends React.Component<{}> {
       endDate: this.props.endDate,
     }
     params = Object.entries(params).reduce((a,[k,v]) => (v ? {...a, [k]:v} : a), {})
-    console.log(params)
+
     return Promise.all(
       apiCalls.map(
       dataObj => {
