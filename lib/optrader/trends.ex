@@ -1,4 +1,6 @@
 defmodule Optrader.Trends do
+  alias Optrader.Trends
+
   use Hound.Helpers
   use Ecto.Schema
   import Ecto.Changeset
@@ -86,22 +88,28 @@ defmodule Optrader.Trends do
   end
 
   def save_new_trends(data, currency_info \\ default_currency) do
-    new_trend = %Optrader.Trends{}
     interval_data = calculate_interval(Enum.at(data, 0)[:time], Enum.at(data, 1)[:time])
 
     data
     |> Enum.with_index()
     |> Enum.map(fn {data, idx} ->
+      current_time = NaiveDateTime.utc_now()|> NaiveDateTime.truncate(:second)
       timestamp = String.to_integer(data[:time])
 
       record = %{timestamp: timestamp}
       |> Map.merge(interval_data)
       |> Map.merge(currency_info)
+      |> Map.merge(%{inserted_at: current_time, updated_at: current_time})
       |> Map.merge(%{value: List.first(data[:value])})
-
-      Optrader.Trends.changeset(new_trend, record)
-      |> Optrader.Repo.insert
     end)
+    |> Trends.create_many
+  end
+
+  def create_many(trends) do
+    Optrader.Repo.insert_all(
+      Trends,
+      trends
+    )
   end
 
   defp calculate_interval(date_1, date_2) do

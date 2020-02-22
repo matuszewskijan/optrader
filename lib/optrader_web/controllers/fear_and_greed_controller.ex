@@ -4,9 +4,7 @@ defmodule OptraderWeb.FearAndGreedController do
   alias Optrader.FearAndGreed
 
   def index(conn, params) do
-    # { _, response } = FearAndGreed.import
-
-    # response[:data] |> FearAndGreed.save_new_indexes
+    Optrader.Synchronization.synchronize_fear_and_greed
 
     records = FearAndGreed
     |> FearAndGreed.in_date_range(params["startDate"], params["endDate"])

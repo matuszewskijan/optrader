@@ -4,7 +4,7 @@ defmodule OptraderWeb.TrendsController do
   alias Optrader.Trends
 
   def index(conn, _params) do
-    # Trends.import_data |> Trends.save_new_trends
+    Optrader.Synchronization.synchronize_google_trends
 
     records = Trends |> Trends.sorted |> Optrader.Repo.all
 

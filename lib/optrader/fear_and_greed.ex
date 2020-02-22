@@ -1,4 +1,6 @@
 defmodule Optrader.FearAndGreed do
+  alias Optrader.FearAndGreed
+
   use Ecto.Schema
   import Ecto.Changeset
   import Ecto.Query
@@ -24,7 +26,7 @@ defmodule Optrader.FearAndGreed do
   def validate_unique_timestamp(changeset) do
     timestamp = get_field(changeset, :timestamp)
     if timestamp do
-      timestamp_query = from e in Optrader.FearAndGreed, where: e.timestamp == ^timestamp
+      timestamp_query = from e in FearAndGreed, where: e.timestamp == ^timestamp
 
       # For updates, don't flag event as a dup of itself
       id = get_field(changeset, :id)
@@ -70,15 +72,24 @@ defmodule Optrader.FearAndGreed do
   end
 
   def save_new_indexes(data) do
-    f_g_index = %Optrader.FearAndGreed{}
-
     List.wrap(data)
     |> Enum.with_index()
     |> Enum.map(fn {index, id} ->
-      f_g_index
-      |> Optrader.FearAndGreed.changeset(Map.merge(index, %{ timestamp: String.to_integer(index[:timestamp]) }))
-      |> Optrader.Repo.insert
+      current_time = NaiveDateTime.utc_now()|> NaiveDateTime.truncate(:second)
+
+      index
+      |> Map.merge(%{ timestamp: String.to_integer(index[:timestamp]) })
+      |> Map.merge(%{ inserted_at: current_time, updated_at: current_time })
+      |> Map.delete(:time_until_update)
     end)
+    |> create_many
+  end
+
+  def create_many(indexes) do
+    Optrader.Repo.insert_all(
+      FearAndGreed,
+      indexes
+    )
   end
 
   # TODO: Support sorting direction here
@@ -112,7 +123,7 @@ defmodule Optrader.FearAndGreed do
     |> Enum.map(fn {index, i} ->
          if (next_element = Enum.at(records, i + 1)) do
            next_timestamp = next_element.timestamp
-           if (time_difference = (next_timestamp - index.timestamp)) != @one_day do
+           if (time_difference = (next_timestamp - index.timestamp)) != @one_day && time_difference != 0 do
              number_of_elements = Kernel.ceil(time_difference / @one_day) - 1
              generated_objects = generate_dummy_objects(number_of_elements, index.value, next_element.value, index.timestamp)
              [index, generated_objects]
