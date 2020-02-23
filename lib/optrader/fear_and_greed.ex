@@ -52,29 +52,10 @@ defmodule Optrader.FearAndGreed do
     end
   end
 
-  def import(params \\ [{"limit", 10 }], headers \\ []) do
-    url = "https://api.alternative.me/fng/"
-
-    url
-    |> HTTPoison.get(headers, params: params)
-    |> case do
-        {:ok, %{body: raw, status_code: code}} -> {:ok, raw}
-        {:error, %{reason: reason}} -> {:error, reason}
-       end
-    |> (fn {status, body} ->
-          body
-          |> Poison.decode(keys: :atoms)
-          |> case do
-               {:ok, parsed} -> {status, parsed}
-               _ -> {:error, body}
-             end
-        end).()
-  end
-
   def save_new_indexes(data) do
     List.wrap(data)
     |> Enum.with_index()
-    |> Enum.map(fn {index, id} ->
+    |> Enum.map(fn {index, _id} ->
       current_time = NaiveDateTime.utc_now()|> NaiveDateTime.truncate(:second)
 
       index

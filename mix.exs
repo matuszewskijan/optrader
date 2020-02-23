@@ -46,7 +46,8 @@ defmodule Optrader.Mixfile do
       {:httpoison, "~> 1.5"},
       {:poison, "~> 3.1"},
       {:hound, "~> 1.0"},
-      {:timex, "~> 3.5"}
+      {:timex, "~> 3.5"},
+      {:mox, "~> 0.5.0", only: :test}
     ]
   end
 

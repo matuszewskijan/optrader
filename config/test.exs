@@ -18,3 +18,6 @@ config :optrader, Optrader.Repo,
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: 10
+
+config :optrader, :fear_and_greed_api, Optrader.FearAndGreed.FetchInMemory
+config :optrader, :google_trends_api, Optrader.Trends.FetchInMemory

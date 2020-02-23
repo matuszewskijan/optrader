@@ -62,3 +62,6 @@ config :logger, level: :info
 # Finally import the config/prod.secret.exs
 # which should be versioned separately.
 import_config "prod.secret.exs"
+
+config :optrader, :fear_and_greed_api, Optrader.FearAndGreed.FetchHttp
+config :optrader, :google_trends_api, Optrader.Trends.FetchHttp

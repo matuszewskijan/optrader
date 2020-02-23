@@ -61,3 +61,6 @@ config :optrader, Optrader.Repo,
   database: "optrader_dev",
   hostname: "localhost",
   pool_size: 10
+
+config :optrader, :fear_and_greed_api, Optrader.FearAndGreed.FetchHttp
+config :optrader, :google_trends_api, Optrader.Trends.FetchHttp

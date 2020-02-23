@@ -1,7 +1,6 @@
 defmodule Optrader.Trends do
   alias Optrader.Trends
 
-  use Hound.Helpers
   use Ecto.Schema
   import Ecto.Changeset
   import Ecto.Query
@@ -54,49 +53,16 @@ defmodule Optrader.Trends do
     end
   end
 
-  def import_data() do
-    Hound.start_session()
-    maximize_window(current_window_handle())
-    navigate_to "https://trends.google.com/trends"
-    Process.sleep(10000)
-    navigate_to "https://trends.google.com/trends/explore?date=now%207-d&q=bitcoin"
-    Process.sleep(20000)
-    urls = for x <- 1..50, do: execute_script("var performance = window.performance; var network = performance.getEntries() || {}; return network[#{x}]['name']")
-
-    json = Enum.find(urls, fn url -> String.starts_with?(url, "https://trends.google.com/trends/api/widgetdata/multiline") == true end)
-    |> trends_request
-
-    { _, data } = json
-    data[:default][:timelineData]
-  end
-
-  def trends_request(url) do
-    url
-    |> HTTPoison.get
-    |> case do
-        {:ok, %{body: raw, status_code: code}} -> {:ok, raw}
-        {:error, %{reason: reason}} -> {:error, reason}
-       end
-    |> (fn {status, body} ->
-          Enum.at(String.split(body, "\n"), 1)
-          |> Poison.decode(keys: :atoms)
-          |> case do
-               {:ok, parsed} -> {status, parsed}
-               _ -> {:error, body}
-             end
-        end).()
-  end
-
-  def save_new_trends(data, currency_info \\ default_currency) do
+  def save_new_trends(data, currency_info \\ default_currency()) do
     interval_data = calculate_interval(Enum.at(data, 0)[:time], Enum.at(data, 1)[:time])
 
     data
     |> Enum.with_index()
-    |> Enum.map(fn {data, idx} ->
+    |> Enum.map(fn {data, _idx} ->
       current_time = NaiveDateTime.utc_now()|> NaiveDateTime.truncate(:second)
       timestamp = String.to_integer(data[:time])
 
-      record = %{timestamp: timestamp}
+      %{timestamp: timestamp}
       |> Map.merge(interval_data)
       |> Map.merge(currency_info)
       |> Map.merge(%{inserted_at: current_time, updated_at: current_time})
@@ -106,10 +72,8 @@ defmodule Optrader.Trends do
   end
 
   def create_many(trends) do
-    Optrader.Repo.insert_all(
-      Trends,
-      trends
-    )
+    {created, _} = Optrader.Repo.insert_all(Trends, trends)
+    created
   end
 
   defp calculate_interval(date_1, date_2) do
