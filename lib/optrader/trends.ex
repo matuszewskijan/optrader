@@ -5,6 +5,8 @@ defmodule Optrader.Trends do
   import Ecto.Changeset
   import Ecto.Query
 
+  @one_day 86400
+
   schema "google_trends" do
     field :currency_name, :string
     field :currency_short_name, :string
@@ -53,34 +55,44 @@ defmodule Optrader.Trends do
     end
   end
 
+  # TODO: Refactor it to few small functions
   def save_new_trends(data, currency_info \\ default_currency()) do
-    interval_data = calculate_interval(Enum.at(data, 0)[:time], Enum.at(data, 1)[:time])
+    interval_data = Trends.calculate_interval(Enum.at(data, 0)[:time], Enum.at(data, 1)[:time])
 
     data
     |> Enum.with_index()
     |> Enum.map(fn {data, _idx} ->
-      current_time = NaiveDateTime.utc_now()|> NaiveDateTime.truncate(:second)
       timestamp = String.to_integer(data[:time])
 
-      %{timestamp: timestamp}
+      trend = %{timestamp: timestamp}
       |> Map.merge(interval_data)
       |> Map.merge(currency_info)
-      |> Map.merge(%{inserted_at: current_time, updated_at: current_time})
       |> Map.merge(%{value: List.first(data[:value])})
+
+      Trends.changeset(%Trends{}, trend)
+      |> Optrader.Repo.insert
     end)
-    |> Trends.create_many
+    |> Trends.count_created_records
   end
 
-  def create_many(trends) do
-    {created, _} = Optrader.Repo.insert_all(Trends, trends)
-    created
+  def count_created_records(data) do
+    Enum.reduce(data, %{success: 0, failed: 0}, fn({status, _}, x) ->
+      case status do
+      :ok ->
+        Map.merge(x, %{ success: x.success + 1})
+      :error ->
+        Map.merge(x, %{ failed: x.failed + 1})
+      end
+    end)
   end
 
-  defp calculate_interval(date_1, date_2) do
-    time_difference = String.to_integer(date_2) - String.to_integer(date_1)
+  def calculate_interval(date_1, date_2) do
+    if is_nil(date_1) || is_nil(date_2) do
+      %{ interval_number: 1, interval_unit: "hour"} # Consider 1 hour as default interval
+    else
+      time_difference = String.to_integer(date_2) - String.to_integer(date_1)
 
-    if time_difference == 3600 do
-      %{ interval_number: 1, interval_unit: "hour"}
+      %{ interval_number: Integer.floor_div(time_difference, 3600), interval_unit: "hour"}
     end
   end
 
@@ -88,8 +100,52 @@ defmodule Optrader.Trends do
     %{currency_name: "bitcoin", currency_short_name: "btc"}
   end
 
-  def sorted(query) do
+  def sort_by_timestamp(query) do
     from p in query,
     order_by: [asc: p.timestamp]
+  end
+
+  def in_date_range(query, start_date \\ nil, end_date \\ nil) do
+    if start_date && end_date do
+      from f in query,
+      where: f.timestamp >= ^String.to_integer(start_date) and f.timestamp <= ^String.to_integer(end_date)
+    else
+      query
+    end
+  end
+
+  # TODO: Move it to the consistency or something like that module(find better name)
+  def generate_consistency_data(records) do
+    records
+    |> Enum.with_index()
+    |> Enum.map(fn {index, i} ->
+         if (next_element = Enum.at(records, i + 1)) do
+           next_timestamp = next_element.timestamp
+           if (time_difference = (next_timestamp - index.timestamp)) != @one_day && time_difference != 0 do
+             number_of_elements = Kernel.ceil(time_difference / @one_day) - 1
+             generated_objects = generate_dummy_objects(number_of_elements, index.value, next_element.value, index.timestamp)
+             [index, generated_objects]
+           else
+             index
+           end
+         else
+           index
+         end
+       end)
+    |> List.flatten
+  end
+
+  # TODO: Move it to the consistency or something like that module(find better name)
+  def generate_dummy_objects(count, last_value, next_value, last_timestamp) do
+    step = (next_value - last_value) / (count + 1)
+    Enum.map(1..count, fn i ->
+      %{
+        id: i,
+        value: last_value + (step * i),
+        label: 'Average from latest available values',
+        value_classification: 'None',
+        timestamp: last_timestamp + (@one_day * i)
+      }
+    end)
   end
 end

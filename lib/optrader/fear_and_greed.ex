@@ -52,6 +52,8 @@ defmodule Optrader.FearAndGreed do
     end
   end
 
+
+  # TODO: Refactor it to few small functions
   def save_new_indexes(data) do
     List.wrap(data)
     |> Enum.with_index()
@@ -73,7 +75,6 @@ defmodule Optrader.FearAndGreed do
         Map.merge(x, %{ failed: x.failed + 1})
       end
     end)
-
   end
 
   # TODO: Support sorting direction here
@@ -101,6 +102,7 @@ defmodule Optrader.FearAndGreed do
     end
   end
 
+  # TODO: Move it to the consistency or something like that module(find better name)
   def generate_consistency_data(records) do
     records
     |> Enum.with_index()
@@ -121,6 +123,7 @@ defmodule Optrader.FearAndGreed do
     |> List.flatten
   end
 
+  # TODO: Move it to the consistency or something like that module(find better name)
   def generate_dummy_objects(count, last_value, next_value, last_timestamp) do
     last_value = String.to_integer(last_value)
     next_value = String.to_integer(next_value)
