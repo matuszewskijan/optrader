@@ -56,21 +56,24 @@ defmodule Optrader.FearAndGreed do
     List.wrap(data)
     |> Enum.with_index()
     |> Enum.map(fn {index, _id} ->
-      current_time = NaiveDateTime.utc_now()|> NaiveDateTime.truncate(:second)
+      index = Map.merge(index, %{ timestamp: String.to_integer(index[:timestamp]) })
 
-      index
-      |> Map.merge(%{ timestamp: String.to_integer(index[:timestamp]) })
-      |> Map.merge(%{ inserted_at: current_time, updated_at: current_time })
-      |> Map.delete(:time_until_update)
+      FearAndGreed.changeset(%FearAndGreed{}, index)
+      |> Optrader.Repo.insert
     end)
-    |> create_many
+    |> FearAndGreed.count_created_records
   end
 
-  def create_many(indexes) do
-    Optrader.Repo.insert_all(
-      FearAndGreed,
-      indexes
-    )
+  def count_created_records(data) do
+    Enum.reduce(data, %{success: 0, failed: 0}, fn({status, _}, x) ->
+      case status do
+      :ok ->
+        Map.merge(x, %{ success: x.success + 1})
+      :error ->
+        Map.merge(x, %{ failed: x.failed + 1})
+      end
+    end)
+
   end
 
   # TODO: Support sorting direction here

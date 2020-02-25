@@ -17,26 +17,27 @@ defmodule Optrader.FearAndGreedTest do
       assert new_index.errors == [timestamp: {"has already been taken", [validation: :validate_unique_timestamp]}]
     end
 
-    test "save_new_indexes/1 with valid data creates a new index" do
-      data = FearAndGreed.save_new_indexes([@valid_attrs1, @valid_attrs2])
-      |> Enum.map(fn {_status, data} -> data end)
+    test "save_new_indexes/1 with valid data create new indexes" do
+      %{ success: success, failed: invalid } = FearAndGreed.save_new_indexes([@valid_attrs1, @valid_attrs2])
 
-      assert Enum.at(data, 0).value != Enum.at(data, 1).value
-      assert Enum.at(data, 0).value_classification != Enum.at(data, 1).value_classification
-      assert Enum.at(data, 0).timestamp != Enum.at(data, 1).timestamp
+      assert success == 2
+      assert invalid == 0
+      assert Optrader.Repo.get_by(FearAndGreed, value: "100") != nil
+      assert Optrader.Repo.get_by(FearAndGreed, value: "0") != nil
     end
 
-    test "save_new_indexes/1 with invalid data return validation error" do
-      assert [error: error] = FearAndGreed.save_new_indexes([@invalid_attrs])
+    test "save_new_indexes/1 with invalid data return number of invalid entities" do
+      %{ success: success, failed: invalid } = FearAndGreed.save_new_indexes([@valid_attrs1, @valid_attrs1])
 
-      assert error.valid? == false
-      assert error.errors == [value: {"can't be blank", [validation: :required]}]
+      assert success == 1
+      assert invalid == 1
     end
 
-    test "save_new_indexes/1 without data return empty array" do
-      data = FearAndGreed.save_new_indexes([])
+    test "save_new_indexes/1 without data return zero success and fails" do
+      %{ success: success, failed: invalid } = FearAndGreed.save_new_indexes([])
 
-      assert data == []
+      assert success == 0
+      assert invalid == 0
     end
 
     test "sort_by_timestamp/1 sorts data by timestamp" do
@@ -72,16 +73,16 @@ defmodule Optrader.FearAndGreedTest do
       assert records_count == 2
     end
 
-    # test "generate_consistency_data/1 returns unchanged data when no time gaps inside" do
-    #   FearAndGreed.save_new_indexes([@valid_attrs1, @valid_attrs2, Map.merge(@valid_attrs2, %{ timestamp: "0" })])
+    test "generate_consistency_data/1 returns unchanged data when no time gaps inside" do
+      FearAndGreed.save_new_indexes([@valid_attrs1, @valid_attrs2, Map.merge(@valid_attrs2, %{ timestamp: "0" })])
 
-    #   records = FearAndGreed
-    #   |> FearAndGreed.sort_by_timestamp
-    #   |> Optrader.Repo.all
+      records = FearAndGreed
+      |> FearAndGreed.sort_by_timestamp
+      |> Optrader.Repo.all
 
-    #   consistent_records = FearAndGreed.generate_consistency_data(records)
-    #   assert records == consistent_records
-    # end
+      consistent_records = FearAndGreed.generate_consistency_data(records)
+      assert records == consistent_records
+    end
 
     test "generate_consistency_data/1 returns virtual objects with average data when time gap inside" do
       records = [

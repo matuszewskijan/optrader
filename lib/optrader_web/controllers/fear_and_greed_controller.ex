@@ -8,7 +8,7 @@ defmodule OptraderWeb.FearAndGreedController do
     if Synchronization.synchronization_needed?("google_trends") do
       imported_records_counter =
       fear_and_greed_api().import([{"limit", Synchronization.days_since_last_sync("google_trends")}]).data
-      |> FearAndGreed.save_new_indexes
+      |> FearAndGreed.save_new_indexes[:success]
 
       Synchronization.create(%{service: "fear_and_greed", imported_items: imported_records_counter})
     end
