@@ -5,10 +5,10 @@ defmodule OptraderWeb.TrendsController do
   alias Optrader.Synchronization
 
   def index(conn, params) do
-    if Synchronization.synchronization_needed?("google_trends") do
-      imported_records_counter = google_trends_api().import_data |> Trends.save_new_trends
-      Synchronization.create(%{service: "google_trends", imported_items: imported_records_counter})
-    end
+    # if Synchronization.synchronization_needed?("google_trends") do
+    #   imported_records_counter = google_trends_api().import_data |> Trends.save_new_trends
+    #   Synchronization.create(%{service: "google_trends", imported_items: imported_records_counter})
+    # end
 
     records = Trends
     |> Trends.in_date_range(params["startDate"], params["endDate"])

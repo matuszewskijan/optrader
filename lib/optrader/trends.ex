@@ -96,6 +96,15 @@ defmodule Optrader.Trends do
     end
   end
 
+  def with_interval(query, interval) do
+    if interval && interval != "24" do
+      from f in query,
+      where: f.id == 0;
+    else
+      query
+    end
+  end
+
   defp default_currency do
     %{currency_name: "bitcoin", currency_short_name: "btc"}
   end
@@ -144,7 +153,11 @@ defmodule Optrader.Trends do
         value: last_value + (step * i),
         label: 'Average from latest available values',
         value_classification: 'None',
-        timestamp: last_timestamp + (@one_day * i)
+        timestamp: last_timestamp + (@one_day * i),
+        currency_name: "bitcoin",
+        currency_short_name: "btc",
+        interval_number: 1,
+        interval_unit: "hour"
       }
     end)
   end

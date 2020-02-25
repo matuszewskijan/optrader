@@ -18,8 +18,6 @@ defmodule Optrader.Trends.FetchHttp do
     { _, data } = Enum.find(urls, fn url -> String.starts_with?(url, "https://trends.google.com/trends/api/widgetdata/multiline") == true end)
     |> trends_request
 
-    require IEx; IEx.pry;
-
     data[:default][:timelineData]
   end
 
