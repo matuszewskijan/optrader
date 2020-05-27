@@ -1,0 +1,8 @@
+<table>
+  <%= for record <- @records do %>
+    <tr>
+      <td width='250px'><%= record.date %></td>
+      <td width='50px'><%= record.value %></td>
+    </tr>
+  <% end %>
+</table>
